@@ -693,7 +693,6 @@ namespace beam::wallet
     namespace
     {
         const char* WalletSeed = "WalletSeed";
-        const char* TrezorWallet = "TrezorWallet";
         const char* OwnerKey = "OwnerKey";
         const char* Version = "Version";
         const char* SystemStateIDName = "SystemStateID";
@@ -1067,9 +1066,6 @@ namespace beam::wallet
             CreateStatesTable(walletDB->_db);
 
             {
-                bool initWithTrezor = true;
-                walletDB->setPrivateVarRaw(TrezorWallet, &initWithTrezor, sizeof initWithTrezor);
-
                 // store owner key (public)
                 {
                     ECC::NoLeak<ECC::HKdfPub::Packed> packedOwnerKey;
@@ -1092,7 +1088,7 @@ namespace beam::wallet
         return Ptr();
     }
 
-    IWalletDB::Ptr WalletDB::open(const string& path, const SecString& password, io::Reactor::Ptr reactor)
+    IWalletDB::Ptr WalletDB::open(const string& path, const SecString& password, io::Reactor::Ptr reactor, bool useTrezor)
     {
         try
         {
@@ -1336,6 +1332,7 @@ namespace beam::wallet
                     }
                 }
 
+                walletDB->m_useTrezor = useTrezor;
                 return static_pointer_cast<IWalletDB>(walletDB);
             }
 
@@ -1398,7 +1395,7 @@ namespace beam::wallet
 
     Key::IKdf::Ptr WalletDB::get_MasterKdf() const
     {
-        return m_pKdf;
+        return m_useTrezor ? nullptr : m_pKdf;
     }
 
 	Key::IKdf::Ptr IWalletDB::get_ChildKdf(const Key::IDV& kidv) const

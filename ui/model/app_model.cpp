@@ -122,7 +122,7 @@ bool AppModel::openWallet(const beam::SecString& pass)
     }
     else if (WalletDB::isInitialized(m_settings.getTrezorWalletStorage()))
     {
-        m_db = WalletDB::open(m_settings.getTrezorWalletStorage(), pass, m_walletReactor);
+        m_db = WalletDB::open(m_settings.getTrezorWalletStorage(), pass, m_walletReactor, true);
         if (!m_db) return false;
         m_keyKeeper = std::make_shared<TrezorKeyKeeper>();
     }
