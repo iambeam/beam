@@ -288,8 +288,11 @@ StartViewModel::~StartViewModel()
 
 bool StartViewModel::walletExists() const
 {
-    return wallet::WalletDB::isInitialized(AppModel::getInstance().getSettings().getWalletStorage()) 
-        || wallet::WalletDB::isInitialized(AppModel::getInstance().getSettings().getTrezorWalletStorage());
+    return wallet::WalletDB::isInitialized(AppModel::getInstance().getSettings().getWalletStorage())
+#if defined(BEAM_HW_WALLET)
+        || wallet::WalletDB::isInitialized(AppModel::getInstance().getSettings().getTrezorWalletStorage())
+#endif
+    ;
 }
 
 bool StartViewModel::isTrezorEnabled() const

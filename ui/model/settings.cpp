@@ -77,6 +77,7 @@ WalletSettings::WalletSettings(const QDir& appDataDir)
 
 }
 
+#if defined(BEAM_HW_WALLET)
 // !TODO: warning, copypasted from getWalletStorage()
 string WalletSettings::getTrezorWalletStorage() const
 {
@@ -91,6 +92,8 @@ string WalletSettings::getTrezorWalletStorage() const
     return m_appDataDir.filePath(version + "/" + TrezorWalletDBFile).toStdString();
 
 }
+#endif
+
 string WalletSettings::getWalletStorage() const
 {
     Lock lock(m_mutex);

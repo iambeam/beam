@@ -178,7 +178,11 @@ void AppModel::resetWalletImpl()
     m_db.reset();
 
     fsutils::remove(getSettings().getWalletStorage());
+
+#if defined(BEAM_HW_WALLET)
     fsutils::remove(getSettings().getTrezorWalletStorage());
+#endif
+
     fsutils::remove(getSettings().getLocalNodeStorage());
 
     emit walletReseted();
