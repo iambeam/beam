@@ -128,9 +128,12 @@ class StartViewModel : public QObject
     Q_PROPERTY(QList<QObject*> checkPhrases READ getCheckPhrases NOTIFY checkPhrasesChanged)
     Q_PROPERTY(QChar phrasesSeparator READ getPhrasesSeparator CONSTANT)
     Q_PROPERTY(bool isTrezorEnabled READ isTrezorEnabled CONSTANT)
+
+#if defined(BEAM_HW_WALLET)
     Q_PROPERTY(bool isTrezorConnected READ isTrezorConnected NOTIFY isTrezorConnectedChanged)
     Q_PROPERTY(QString trezorDeviceName READ getTrezorDeviceName NOTIFY trezorDeviceNameChanged)
     Q_PROPERTY(bool isOwnerKeyImported READ isOwnerKeyImported NOTIFY isOwnerKeyImportedChanged)
+#endif
 
     Q_PROPERTY(int localPort READ getLocalPort CONSTANT)
     Q_PROPERTY(QString remoteNodeAddress READ getRemoteNodeAddress CONSTANT)
@@ -148,9 +151,13 @@ public:
 
     bool walletExists() const;
     bool isTrezorEnabled() const;
+
+#if defined(BEAM_HW_WALLET)
     bool isTrezorConnected() const;
     QString getTrezorDeviceName() const;
     bool isOwnerKeyImported() const;
+#endif
+
     bool getIsRecoveryMode() const;
     void setIsRecoveryMode(bool value);
     const QList<QObject*>& getRecoveryPhrases();
@@ -182,9 +189,12 @@ public:
     Q_INVOKABLE QString defaultRemoteNodeAddr() const;
     Q_INVOKABLE void checkCapsLock();
     Q_INVOKABLE void openFolder(const QString& path) const;
+
+#if defined(BEAM_HW_WALLET)
     Q_INVOKABLE void startOwnerKeyImporting();
     Q_INVOKABLE bool isPinValid(const QString& pin);
     Q_INVOKABLE void setOwnerKeyPin(const QString& pin);
+#endif
 
 signals:
     void walletExistsChanged();
@@ -194,9 +204,12 @@ signals:
     void isRecoveryModeChanged();
     void capsLockStateMayBeChanged();
     void validateDictionaryChanged();
+
+#if defined(BEAM_HW_WALLET)
     void isTrezorConnectedChanged();
     void trezorDeviceNameChanged();
     void isOwnerKeyImportedChanged();
+#endif
 
 public slots:
     bool createWallet();
@@ -204,9 +217,9 @@ public slots:
     bool checkWalletPassword(const QString& password) const;
     void setPassword(const QString& pass);
     void onNodeSettingsChanged();
-    void onTrezorOwnerKeyImported(const QString& key);
 
 #if defined(BEAM_HW_WALLET)
+    void onTrezorOwnerKeyImported(const QString& key);
     void checkTrezor();
 #endif
 

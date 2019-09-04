@@ -20,7 +20,11 @@
 #include <QApplication>
 #include <QTranslator>
 #include "wallet/local_private_key_keeper.h"
+
+#if defined(BEAM_HW_WALLET)
+#include "core/block_rw.h"
 #include "wallet/trezor_key_keeper.h"
+#endif
 
 using namespace beam;
 using namespace beam::wallet;
@@ -78,8 +82,7 @@ bool AppModel::createWallet(const SecString& seed, const SecString& pass)
     return true;
 }
 
-#include "core/block_rw.h"
-
+#if defined(BEAM_HW_WALLET)
 bool AppModel::createTrezorWallet(std::shared_ptr<ECC::HKdfPub> ownerKey, const beam::SecString& pass)
 {
     // !TODO: copypasted from createWallet, pls do refactoring and backup DB
@@ -109,6 +112,7 @@ bool AppModel::createTrezorWallet(std::shared_ptr<ECC::HKdfPub> ownerKey, const 
     onWalledOpened(pass);
     return true;
 }
+#endif
 
 bool AppModel::openWallet(const beam::SecString& pass)
 {
@@ -120,12 +124,14 @@ bool AppModel::openWallet(const beam::SecString& pass)
         if (!m_db) return false;
         m_keyKeeper = std::make_shared<LocalPrivateKeyKeeper>(m_db);
     }
+#if defined(BEAM_HW_WALLET)
     else if (WalletDB::isInitialized(m_settings.getTrezorWalletStorage()))
     {
         m_db = WalletDB::open(m_settings.getTrezorWalletStorage(), pass, m_walletReactor, true);
         if (!m_db) return false;
         m_keyKeeper = std::make_shared<TrezorKeyKeeper>();
     }
+#endif
 
     onWalledOpened(pass);
     return true;

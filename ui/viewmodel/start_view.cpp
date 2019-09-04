@@ -40,6 +40,11 @@
 #include <algorithm>
 #include <thread>
 
+#if defined(BEAM_HW_WALLET)
+#include "core/block_rw.h"
+#include "wallet/hw_wallet.h"
+#endif
+
 using namespace beam;
 using namespace ECC;
 using namespace std;
@@ -297,19 +302,11 @@ bool StartViewModel::isTrezorEnabled() const
 }
 
 #if defined(BEAM_HW_WALLET)
-#include "wallet/hw_wallet.h"
-#endif
-
 bool StartViewModel::isTrezorConnected() const
 {
-#if defined(BEAM_HW_WALLET)
     return m_isTrezorConnected;
-#else
-    return false;
-#endif
 }
 
-#if defined(BEAM_HW_WALLET)
 void StartViewModel::checkTrezor()
 {
     bool foundDevice = !m_hwWallet->getDevices().empty();
@@ -354,16 +351,11 @@ void StartViewModel::onTrezorOwnerKeyImported(const QString& key)
     emit isOwnerKeyImportedChanged();
 }
 
-#endif
-
 void StartViewModel::startOwnerKeyImporting()
 {
     if(m_ownerKeyEncrypted.empty())
         m_trezorThread.start();
 }
-
-#include "core/block_rw.h"
-
 // !TODO: very slow operation, should be excluded
 bool StartViewModel::isPinValid(const QString& pin)
 {
@@ -384,6 +376,8 @@ void StartViewModel::setOwnerKeyPin(const QString& pin)
 {
     m_ownerKeyPass = pin.toStdString();
 }
+
+#endif
 
 bool StartViewModel::getIsRecoveryMode() const
 {

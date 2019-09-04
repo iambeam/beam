@@ -1041,6 +1041,7 @@ namespace beam::wallet
         return Ptr();
     }
 
+#if defined(BEAM_HW_WALLET)
     // !TODO: copypasted from init(), pls do refactoring
     IWalletDB::Ptr WalletDB::initWithTrezor(const string& path, std::shared_ptr<ECC::HKdfPub> ownerKey, const SecString& password, io::Reactor::Ptr reactor)
     {
@@ -1085,6 +1086,7 @@ namespace beam::wallet
 
         return Ptr();
     }
+#endif
 
     IWalletDB::Ptr WalletDB::open(const string& path, const SecString& password, io::Reactor::Ptr reactor, bool useTrezor)
     {
