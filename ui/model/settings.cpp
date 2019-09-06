@@ -67,7 +67,9 @@ const char* WalletSettings::WalletCfg = "beam-wallet.cfg";
 const char* WalletSettings::LogsFolder = "logs";
 const char* WalletSettings::SettingsFile = "settings.ini";
 const char* WalletSettings::WalletDBFile = "wallet.db";
+#if defined(BEAM_HW_WALLET)
 const char* WalletSettings::TrezorWalletDBFile = "trezor-wallet.db";
+#endif
 const char* WalletSettings::NodeDBFile = "node.db";
 
 WalletSettings::WalletSettings(const QDir& appDataDir)
