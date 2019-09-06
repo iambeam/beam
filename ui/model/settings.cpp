@@ -80,33 +80,30 @@ WalletSettings::WalletSettings(const QDir& appDataDir)
 }
 
 #if defined(BEAM_HW_WALLET)
-// !TODO: warning, copypasted from getWalletStorage()
 string WalletSettings::getTrezorWalletStorage() const
 {
     Lock lock(m_mutex);
-
-    auto version = QString::fromStdString(PROJECT_VERSION);
-    if (!m_appDataDir.exists(version))
-    {
-        m_appDataDir.mkdir(version);
-    }
-
-    return m_appDataDir.filePath(version + "/" + TrezorWalletDBFile).toStdString();
-
+    return m_appDataDir.filePath(QString::fromStdString(getWalletFolder()) + "/" + TrezorWalletDBFile).toStdString();
 }
 #endif
 
 string WalletSettings::getWalletStorage() const
 {
     Lock lock(m_mutex);
+    return m_appDataDir.filePath(QString::fromStdString(getWalletFolder()) + "/" + WalletDBFile).toStdString();
+}
+
+string WalletSettings::getWalletFolder() const
+{
+    Lock lock(m_mutex);
 
     auto version = QString::fromStdString(PROJECT_VERSION);
     if (!m_appDataDir.exists(version))
     {
         m_appDataDir.mkdir(version);
     }
-    
-    return m_appDataDir.filePath(version + "/" + WalletDBFile).toStdString();
+
+    return m_appDataDir.filePath(version).toStdString();
 }
 
 string WalletSettings::getAppDataPath() const

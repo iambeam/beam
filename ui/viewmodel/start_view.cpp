@@ -717,10 +717,19 @@ void StartViewModel::deleteCurrentWalletDB()
 {
     try
     {
-        auto pathToDB = pathFromStdString(AppModel::getInstance().getSettings().getWalletStorage());
-        boost::filesystem::remove(pathToDB);
+        {
+            auto pathToDB = pathFromStdString(AppModel::getInstance().getSettings().getWalletStorage());
+            if (boost::filesystem::exists(pathToDB))
+                boost::filesystem::remove(pathToDB);
+        }
 
-        // !TODO: delete trezor DB if exists
+#if defined(BEAM_HW_WALLET)
+        {
+            auto pathToDB = pathFromStdString(AppModel::getInstance().getSettings().getTrezorWalletStorage());
+            if (boost::filesystem::exists(pathToDB))
+                boost::filesystem::remove(pathToDB);
+        }
+#endif
     }
     catch (std::exception& e)
     {
@@ -732,10 +741,8 @@ void StartViewModel::migrateWalletDB(const QString& path)
 {
     try
     {
-        // !TODO: check the same for Trezor DB
-
         auto pathSrc = pathFromStdString(path.toStdString());
-        auto pathDst = pathFromStdString(AppModel::getInstance().getSettings().getWalletStorage());
+        auto pathDst = pathFromStdString(AppModel::getInstance().getSettings().getWalletFolder() + "/" + pathSrc.filename().string());
         boost::filesystem::copy_file(pathSrc, pathDst);
     }
     catch (std::exception& e)

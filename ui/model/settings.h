@@ -45,6 +45,7 @@ public:
     std::string getTrezorWalletStorage() const;
 #endif
     std::string getWalletStorage() const;
+    std::string getWalletFolder() const;
     std::string getAppDataPath() const;
     void reportProblem();
 
@@ -89,6 +90,6 @@ signals:
 private:
     QSettings m_data;
     QDir m_appDataDir;
-    mutable std::mutex m_mutex;
-    using Lock = std::unique_lock<std::mutex>;
+    mutable std::recursive_mutex m_mutex;
+    using Lock = std::unique_lock<decltype(m_mutex)>;
 };
