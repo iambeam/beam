@@ -30,6 +30,7 @@
 #include "wallet/common.h"
 #include "utility/io/address.h"
 #include "secstring.h"
+#include "private_key_keeper.h"
 
 struct sqlite3;
 
@@ -113,7 +114,8 @@ namespace beam::wallet
         void setExpiration(ExpirationStatus status);
 
         static constexpr uint64_t AddressExpirationNever = 0;
-        static constexpr uint64_t AddressExpiration24h = 24*60*60;
+        static constexpr uint64_t AddressExpiration24h   = 24 * 60 * 60;
+        static constexpr uint64_t AddressExpiration1h    = 60 * 60;
     };
 
     // Describes structure of generic transaction parameter
@@ -163,7 +165,7 @@ namespace beam::wallet
     struct IWalletDbObserver
     {
         virtual void onCoinsChanged() {};
-        virtual void onTransactionChanged(ChangeAction action, std::vector<TxDescription>&& items) {};
+        virtual void onTransactionChanged(ChangeAction action, const std::vector<TxDescription>& items) {};
         virtual void onSystemStateChanged() {};
         virtual void onAddressChanged(ChangeAction action, const std::vector<WalletAddress>& items) {};
     };
@@ -237,6 +239,7 @@ namespace beam::wallet
         // Set of methods for low level database manipulation
         virtual void setVarRaw(const char* name, const void* data, size_t size) = 0;
         virtual bool getVarRaw(const char* name, void* data, int size) const = 0;
+        virtual void removeVarRaw(const char* name) = 0;
 
         virtual void setPrivateVarRaw(const char* name, const void* data, size_t size) = 0;
         virtual bool getPrivateVarRaw(const char* name, void* data, int size) const = 0;
@@ -334,6 +337,7 @@ namespace beam::wallet
 
         void setVarRaw(const char* name, const void* data, size_t size) override;
         bool getVarRaw(const char* name, void* data, int size) const override;
+        void removeVarRaw(const char* name) override;
 
         void setPrivateVarRaw(const char* name, const void* data, size_t size) override;
         bool getPrivateVarRaw(const char* name, void* data, int size) const override;
@@ -385,7 +389,7 @@ namespace beam::wallet
     private:
         void removeCoinImpl(const Coin::ID& cid);
         void notifyCoinsChanged();
-        void notifyTransactionChanged(ChangeAction action, std::vector<TxDescription>&& items);
+        void notifyTransactionChanged(ChangeAction action, const std::vector<TxDescription>& items);
         void notifySystemStateChanged();
         void notifyAddressChanged(ChangeAction action, const std::vector<WalletAddress>& items);
 
@@ -404,6 +408,7 @@ namespace beam::wallet
         void insertAddressToCache(const WalletID& id, const boost::optional<WalletAddress>& address) const;
         void deleteAddressFromCache(const WalletID& id);
         void flushDB();
+        void rollbackDB();
         void onModified();
         void onFlushTimer();
         void onPrepareToModify();
@@ -507,8 +512,8 @@ namespace beam::wallet
         bool setTxParameter(IWalletDB& db, const TxID& txID, TxParameterID paramID, const ByteBuffer& value, bool shouldNotifyAboutChanges);
 
         bool changeAddressExpiration(IWalletDB& walletDB, const WalletID& walletID, WalletAddress::ExpirationStatus status);
-        WalletAddress createAddress(IWalletDB& walletDB);
-        WalletID generateWalletIDFromIndex(IWalletDB& walletDB, uint64_t ownID);
+        WalletAddress createAddress(IWalletDB& walletDB, IPrivateKeyKeeper::Ptr keyKeeper);
+        WalletID generateWalletIDFromIndex(IPrivateKeyKeeper::Ptr keyKeeper, uint64_t ownID);
 
         Coin::Status GetCoinStatus(const IWalletDB&, const Coin&, Height hTop);
         void DeduceStatus(const IWalletDB&, Coin&, Height hTop);
@@ -576,7 +581,7 @@ namespace beam::wallet
         };
 
         std::string ExportDataToJson(const IWalletDB& db);
-        bool ImportDataFromJson(IWalletDB& db, const char* data, size_t size);
+        bool ImportDataFromJson(IWalletDB& db, IPrivateKeyKeeper::Ptr keyKeeper, const char* data, size_t size);
 
         std::string TxDetailsInfo(const IWalletDB::Ptr& db, const TxID& txID);
         ByteBuffer ExportPaymentProof(const IWalletDB& db, const TxID& txID);

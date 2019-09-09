@@ -134,7 +134,7 @@
     <message id="general-change">
         <source>Change</source>
         <extracomment>UTXO type Change</extracomment>
-        <translation>Change</translation>
+        <translation>เปลี่ยน</translation>
     </message>
     <message id="general-treasury">
         <source>Treasury</source>
@@ -183,8 +183,9 @@
         <translation>แสดงในโฟลเดอร์</translation>
     </message>
     <message id="general-addr-comment-error">
-        <source>Address with same comment already exist</source>
-        <translation>มีที่อยู่ที่เคยใช้คอมเมนต์นี้แล้ว</translation>
+        <source>Address with the same comment already exists</source>
+        <oldsource>Address with same comment already exist</oldsource>
+        <translation type="unfinished">มีที่อยู่ที่เคยใช้คอมเมนต์นี้แล้ว</translation>
     </message>
     <message id="wallet-receive-button">
         <source>Receive</source>
@@ -203,8 +204,9 @@
         <translation>ตรวจสอบการชำระเงิน</translation>
     </message>
     <message id="wallet-txs-date-time">
-        <source>Date | Time</source>
-        <translation>วันที่ | เวลา</translation>
+        <source>Created on</source>
+        <oldsource>Date | Time</oldsource>
+        <translation type="unfinished">วันที่ | เวลา</translation>
     </message>
     <message id="wallet-txs-copy-addr-cm">
         <source>Copy address</source>
@@ -260,7 +262,7 @@
     </message>
     <message id="addresses-tab-active">
         <source>My active addresses</source>
-        <translation>ที่อยู่ที่ฉันใช้งาน</translation>
+        <translation>ที่อยู่ที่ฉันสามารถใช้งานได้</translation>
     </message>
     <message id="addresses-tab-expired">
         <source>My expired addresses</source>
@@ -320,7 +322,7 @@
     <message id="settings-rescan-confirmation-message">
         <source>Rescan will sync transaction and UTXO data with the latest information on the blockchain. The process might take long time.</source>
         <extracomment>settings tab, confirm rescan dialog message</extracomment>
-        <translation>การสแกนใหม่จะทำการดึงธุรกรรมและข้อมูล UTXO ล่าสุดทั้งหมดมาจากบล็อคเชน ดังนั้นการดำเนินการอาจจะใช้เวลาค่อนข้างนาน</translation>
+        <translation>การสแกนใหม่จะทำการดึงธุรกรรมและข้อมูล UTXO ล่าสุดทั้งหมดมาจากบล็อกเชน ดังนั้นการดำเนินการอาจจะใช้เวลาค่อนข้างนาน</translation>
     </message>
     <message id="settings-general-title">
         <source>General settings</source>
@@ -330,7 +332,7 @@
     <message id="settings-general-lock-screen">
         <source>Lock screen</source>
         <extracomment>settings tab, general section, lock screen label</extracomment>
-        <translation>ล็อคหน้าจอ</translation>
+        <translation>ล็อกหน้าจอ</translation>
     </message>
     <message id="settings-general-require-pwd-to-spend">
         <source>Ask password for every sending transaction</source>
@@ -354,7 +356,7 @@
     </message>
     <message id="logo-description">
         <source>Scalable confidential cryptocurrency</source>
-        <translation>คริปโตเคอเรนซี่ที่ยืดหยุดและปลอดภัย</translation>
+        <translation>คริปโตเคอเรนซี่ที่ปลอดภัยและยืดหยุ่น</translation>
     </message>
     <message id="change-pwd-old-empty">
         <source>Please, enter old password</source>
@@ -465,7 +467,7 @@
     </message>
     <message id="secondary-panel-maturing">
         <source>Maturing</source>
-        <translation>รอการปลด</translation>
+        <translation type="vanished">รอการปลด</translation>
     </message>
     <message id="info-title">
         <source>Info view</source>
@@ -473,11 +475,11 @@
     </message>
     <message id="loading-change-settings-button">
         <source>Change settings</source>
-        <translation>เปลี่ยนการตั้งค่า</translation>
+        <translation type="vanished">เปลี่ยนการตั้งค่า</translation>
     </message>
     <message id="loading-try-again-button">
         <source>Try again</source>
-        <translation>กรุณาลองอีกครั้ง</translation>
+        <translation>ลองอีกครั้ง</translation>
     </message>
     <message id="notifications-title">
         <source>Notifications view</source>
@@ -505,7 +507,7 @@
     </message>
     <message id="tx-details-receiving-addr-label">
         <source>Receiving address</source>
-        <translation>ที่อยู่ที่กำลังรับ</translation>
+        <translation>ที่อยู่ที่ใช้รับโอน</translation>
     </message>
     <message id="tx-details-error-label">
         <source>Error</source>
@@ -547,16 +549,19 @@
         <translation>กระเป๋า</translation>
     </message>
     <message id="wallet-receive-title">
-        <source>Receive Beam</source>
-        <translation>รับ Beam</translation>
+        <source>Receive</source>
+        <oldsource>Receive Beam</oldsource>
+        <translation type="unfinished">รับ Beam</translation>
     </message>
     <message id="wallet-receive-my-addr-label">
-        <source>My address</source>
-        <translation>ที่อยู่ของฉัน</translation>
+        <source>My address (auto-generated)</source>
+        <oldsource>My address</oldsource>
+        <translation type="unfinished">ที่อยู่ของฉัน</translation>
     </message>
     <message id="wallet-receive-expires-label">
-        <source>Expires</source>
-        <translation>หมดอายุ</translation>
+        <source>Expires in</source>
+        <oldsource>Expires</oldsource>
+        <translation type="unfinished">หมดอายุ</translation>
     </message>
     <message id="wallet-receive-expires-24">
         <source>24 hours</source>
@@ -564,7 +569,7 @@
     </message>
     <message id="wallet-receive-expires-never">
         <source>Never</source>
-        <translation>ไม่มีกำหนด</translation>
+        <translation>ไม่มี</translation>
     </message>
     <message id="wallet-receive-qr-label">
         <source>Scan to send</source>
@@ -572,23 +577,26 @@
     </message>
     <message id="wallet-receive-propogate-addr-message">
         <source>Send this address to the sender over an external secure channel</source>
-        <translation>นำที่อยู่นี้ไปให้ผู้ที่จะโอนในช่องทางอื่นๆ</translation>
+        <translation type="vanished">นำที่อยู่นี้ไปให้ผู้ที่จะโอนในช่องทางอื่นๆ</translation>
     </message>
     <message id="invalid-addr-got-it-button">
         <source>Got it</source>
-        <translation>ได้รับแล้ว</translation>
+        <translation type="vanished">ได้รับแล้ว</translation>
     </message>
     <message id="send-title">
-        <source>Send Beam</source>
-        <translation>โอน Beam</translation>
+        <source>Send</source>
+        <oldsource>Send Beam</oldsource>
+        <translation type="unfinished">โอน Beam</translation>
     </message>
     <message id="send-send-to-label">
-        <source>Send To</source>
-        <translation>โอนไปที่</translation>
+        <source>Transaction token or contact</source>
+        <oldsource>Send To</oldsource>
+        <translation type="unfinished">โอนไปที่</translation>
     </message>
     <message id="send-contact-placeholder">
-        <source>Please specify contact</source>
-        <translation>กรุณาเลือกผู้ติดต่อ</translation>
+        <source>Please specify contact or transaction token</source>
+        <oldsource>Please specify contact</oldsource>
+        <translation type="unfinished">กรุณาเลือกผู้ติดต่อ</translation>
     </message>
     <message id="send-amount-label">
         <source>Transaction amount</source>
@@ -600,11 +608,11 @@
     </message>
     <message id="send-fee-fail">
         <source>The minimum fee is %1 GROTH</source>
-        <translation>ค่าธรรมเนียมที่ต่ำที่สุดคือ %1 GROTH</translation>
+        <translation type="vanished">ค่าธรรมเนียมที่ต่ำที่สุดคือ %1 GROTH</translation>
     </message>
     <message id="send-curency-sub-name">
         <source>GROTH</source>
-        <translation>GROTH</translation>
+        <translation type="vanished">GROTH</translation>
     </message>
     <message id="send-remaining-label">
         <source>Remaining</source>
@@ -612,7 +620,7 @@
     </message>
     <message id="send-send-fail">
         <source>Address %1 is invalid</source>
-        <translation>ที่อยู่ %1 ไม่ถูกต้อง</translation>
+        <translation type="vanished">ที่อยู่ %1 ไม่ถูกต้อง</translation>
     </message>
     <message id="start-restore-confirm-button">
         <source>I agree</source>
@@ -814,7 +822,7 @@
     </message>
     <message id="loading-view-connection-error">
         <source>Connection error</source>
-        <translation>การเชื่อมต่อผิดพลาด</translation>
+        <translation>ผิดพลาดในการเชื่อมต่อ</translation>
     </message>
     <message id="start-view-printer-not-found-error">
         <source>Printer is not found. Please, check your printer preferences.</source>
@@ -846,7 +854,7 @@
     </message>
     <message id="tx-failture-not-registered-in-blockchain">
         <source>Failed to register transaction with the blockchain, see node logs for details</source>
-        <translation>ไม่สามารถบันทึกธุรกรรมบนบล็อคเชนได้ กรุณาดู Log เพื่อตรวจสอบรายละเอียด</translation>
+        <translation>ไม่สามารถบันทึกธุรกรรมบนบล็อกเชนได้ กรุณาดู Log เพื่อตรวจสอบรายละเอียด</translation>
     </message>
     <message id="tx-failture-not-valid">
         <source>Transaction is not valid, please send wallet logs to Beam support</source>
@@ -890,11 +898,11 @@
     </message>
     <message id="tx-curency-name">
         <source>BEAM</source>
-        <translation>BEAM</translation>
+        <translation type="vanished">BEAM</translation>
     </message>
     <message id="tx-curency-sub-name">
         <source>GROTH</source>
-        <translation>GROTH</translation>
+        <translation type="vanished">GROTH</translation>
     </message>
     <message id="utxo-utxo">
         <source>UTXO</source>
@@ -946,7 +954,7 @@
     </message>
     <message id="settings-general-lock-screen-never">
         <source>Never</source>
-        <translation>ไม่เคย</translation>
+        <translation>ไม่มี</translation>
     </message>
     <message id="settings-general-lock-screen-1m">
         <source>1 minute</source>
@@ -1011,7 +1019,7 @@
     </message>
     <message id="loading-restore-message-line2">
         <source>Only the wallet balance (UTXO) can be restored, transaction info and addresses are always private and never kept in the blockchain.</source>
-        <translation>มีแค่ยอดคงเหลือของกระเป๋า (UTXO) เท่านั้นที่จะสามารถกู้คืนได้ รายการธุรกรรมและรายการที่อยู่จะเก็บอยู่บนอุปกรณ์ และจะไม่ถูกนำไปบนบล็อคเชน</translation>
+        <translation>มีแค่ยอดคงเหลือของกระเป๋า (UTXO) เท่านั้นที่จะสามารถกู้คืนได้ รายการธุรกรรมและรายการที่อยู่จะเก็บอยู่บนอุปกรณ์ และจะไม่ถูกนำไปบนบล็อกเชน</translation>
     </message>
     <message id="start-recovery-title">
         <source>Create new password</source>
@@ -1173,6 +1181,294 @@
         <source>Password verification is required to change that setting</source>
         <extracomment>settings tab, general section, ask password to send, confirm password dialog, message</extracomment>
         <translation>ต้องการรหัสผ่านเพื่อที่จะเปลี่ยนแปลงการตั้งค่า</translation>
+    </message>
+    <message id="open-in-explorer">
+        <source>Open in Blockchain Explorer</source>
+        <translation>เปิดใน Block Explorer</translation>
+    </message>
+    <message id="restore-finish-alert-button">
+        <source>I understand</source>
+        <translation>ฉันเข้าใจ</translation>
+    </message>
+    <message id="restore-finish-alert-title">
+        <source>Do not simultaneously run two wallets initiated from the same seed phrase</source>
+        <translation>อย่าใช้กลุ่มคำลับในกระเป๋าบนหลายๆอุปกรณ์</translation>
+    </message>
+    <message id="restore-finish-alert-message-line">
+        <source>Don’t use same seed phrase on several devices, your balance and transaction list won’t be synchronized.</source>
+        <translation>อย่าใช้กลุ่มคำลับเดียวกันในหลายๆอุปกรณ์ ยอดคงเหลือและข้อมูลธุรกรรมจะถูกเก็บในอุปกรณ์ใดอุปกรณ์หนึ่งเท่านั้น</translation>
+    </message>
+    <message id="tx-failture-subtx-failed">
+        <source>Subtransaction has failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-contract-amount">
+        <source>Contract&apos;s amount is not valid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-sidechain-contract">
+        <source>Side chain has invalid contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-sidechain-internal-error">
+        <source>Side chain bridge has internal error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-sidechain-network-error">
+        <source>Side chain bridge has network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-sidechain-response-format">
+        <source>Side chain bridge has response format error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-side-chain-credentials">
+        <source>Invalid credentials of Side chain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-not-enough-time-btc-lock">
+        <source>Not enough time to finish btc lock transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-create-multisig">
+        <source>Failed to create multi-signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-fee-too-small">
+        <source>Fee is too small</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-minutes">
+        <source>min.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-seconds">
+        <source>sec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-time">
+        <source>Estimate time: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-fee-rate">
+        <source>Transaction fee rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-fee-fail">
+        <source>The minimum fee is %1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-locked">
+        <source>locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-change-settings">
+        <source>Change settings</source>
+        <translation type="unfinished">เปลี่ยนการตั้งค่า</translation>
+    </message>
+    <message id="wallet-swap">
+        <source>Swap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-reset">
+        <source>Switch off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-node-address">
+        <source>Node Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-username">
+        <source>Username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-password">
+        <source>Password</source>
+        <translation type="unfinished">รหัสผ่าน</translation>
+    </message>
+    <message id="settings-fee-rate">
+        <source>Default fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-title">
+        <source>Offer Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-create">
+        <source>Create an offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-title-2">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-coins">
+        <source>Coins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-all-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-mine-tab">
+        <source>Mine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-others-tab">
+        <source>Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-time-created">
+        <source>Date | time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-amount">
+        <source>Amount</source>
+        <translation type="unfinished">จำนวน</translation>
+    </message>
+    <message id="offer-book-amount-swap">
+        <source>Amount</source>
+        <translation type="unfinished">จำนวน</translation>
+    </message>
+    <message id="offer-book-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-expiration">
+        <source>Expiration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-cancel">
+        <source>Cancel offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-accept">
+        <source>Accept offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-na-message">
+        <source>You do not have any 3rd-party currencies connected.\nUpdate your settings and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-swap-title">
+        <source>Create swap offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-addr-message">
+        <source>Send this address to the sender over an external secure channel or scan the QR code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-copy-address">
+        <source>Copy transaction address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="receive-amount-swap-label">
+        <source>Receive amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="sent-amount-label">
+        <source>Sent amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-offer-expires-label">
+        <source>Offer expiration time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-expires-12">
+        <source>12 hours</source>
+        <translation type="unfinished">24 ชั่วโมง {12 ?}</translation>
+    </message>
+    <message id="wallet-receive-expires-6">
+        <source>6 hours</source>
+        <translation type="unfinished">24 ชั่วโมง {6 ?}</translation>
+    </message>
+    <message id="general-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-your-token">
+        <source>Your transaction token:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-swap-token-message">
+        <source>Send this token to the sender over an external secure channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-swap-publish">
+        <source>publish transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-title">
+        <source>Swap currencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-invalid-token">
+        <source>Invalid address or token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-comment-local">
+        <source>Comments are local and won&apos;t be shared</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-total-label">
+        <source>Total UTXO value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-bitcoin">
+        <source>Bitcoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-litecoin">
+        <source>Litecoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-qtum">
+        <source>QTUM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-currency-na-message">
+        <source>You do not have %1 connected.\nUpdate your settings and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-swap-to-label">
+        <source>Transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-not-enough">
+        <source>There is not enough funds to completer the transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-offered-label">
+        <source>Offered on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-expires-label">
+        <source>Expires on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-address-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-address-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-hours">
+        <source>h.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-calculating">
+        <source>calculating...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-net-problems">
+        <source>It may take longer when usual. Please, check your network.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-rebuild-utxos">
+        <source>Rebuilding UTXO image</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

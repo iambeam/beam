@@ -41,11 +41,6 @@ QString TxObject::date() const
     return toString(m_tx.m_createTime);
 }
 
-QString TxObject::user() const
-{
-    return toString(m_tx.m_peerId);
-}
-
 QString TxObject::userName() const
 {
     return m_userName;
@@ -62,16 +57,41 @@ QString TxObject::comment() const
     return QString(str.c_str()).trimmed();
 }
 
-QString TxObject::amount() const
+QString TxObject::getAmount() const
 {
-    return BeamToString(m_tx.m_amount);
+    return AmountToString(m_tx.m_amount, Currencies::Beam);
+}
+
+double TxObject::getAmountValue() const
+{
+    return m_tx.m_amount;
+}
+
+QString TxObject::getSentAmount() const
+{
+    return m_tx.m_sender ? getAmount() : "";
+}
+
+double TxObject::getSentAmountValue() const
+{
+    return m_tx.m_sender ? m_tx.m_amount : 0;
+}
+
+QString TxObject::getReceivedAmount() const
+{
+    return !m_tx.m_sender ? getAmount() : "";
+}
+
+double TxObject::getReceivedAmountValue() const
+{
+    return !m_tx.m_sender ? m_tx.m_amount : 0;
 }
 
 QString TxObject::change() const
 {
     if (m_tx.m_change)
     {
-        return BeamToString(m_tx.m_change);
+        return AmountToString(m_tx.m_change, Currencies::Beam);
     }
     return QString{};
 }
@@ -116,27 +136,19 @@ beam::wallet::WalletID TxObject::peerId() const
 
 QString TxObject::getSendingAddress() const
 {
-    if (m_tx.m_sender)
-    {
-        return toString(m_tx.m_myId);
-    }
-    return user();
+    return toString(m_tx.m_sender ? m_tx.m_myId : m_tx.m_peerId);
 }
 
 QString TxObject::getReceivingAddress() const
 {
-    if (m_tx.m_sender)
-    {
-        return user();
-    }
-    return toString(m_tx.m_myId);
+    return toString(!m_tx.m_sender ? m_tx.m_myId : m_tx.m_peerId);
 }
 
 QString TxObject::getFee() const
 {
     if (m_tx.m_fee)
     {
-        return BeamToString(m_tx.m_fee);
+        return AmountToString(m_tx.m_fee, Currencies::Beam);
     }
     return QString{};
 }
@@ -176,7 +188,8 @@ QString TxObject::getTransactionID() const
 
 QString TxObject::getFailureReason() const
 {
-    if (getTxDescription().m_status == TxStatus::Failed)
+    // TODO: add support for other transactions
+    if (getTxDescription().m_status == TxStatus::Failed && getTxDescription().m_txType == beam::wallet::TxType::Simple)
     {
         QString Reasons[] =
                 {
@@ -207,7 +220,27 @@ QString TxObject::getFailureReason() const
                         //% "Kernel maximum height is too high"
                         qtTrId("tx-failture-max-height-to-high"),
                         //% "Transaction has invalid state"
-                        qtTrId("tx-failture-invalid-state")
+                        qtTrId("tx-failture-invalid-state"),
+                        //% "Subtransaction has failed"
+                        qtTrId("tx-failture-subtx-failed"),
+                        //% "Contract's amount is not valid"
+                        qtTrId("tx-failture-invalid-contract-amount"),
+                        //% "Side chain has invalid contract"
+                        qtTrId("tx-failture-invalid-sidechain-contract"),
+                        //% "Side chain bridge has internal error"
+                        qtTrId("tx-failture-sidechain-internal-error"),
+                        //% "Side chain bridge has network error"
+                        qtTrId("tx-failture-sidechain-network-error"),
+                        //% "Side chain bridge has response format error"
+                        qtTrId("tx-failture-invalid-sidechain-response-format"),
+                        //% "Invalid credentials of Side chain"
+                        qtTrId("tx-failture-invalid-side-chain-credentials"),
+                        //% "Not enough time to finish btc lock transaction"
+                        qtTrId("tx-failture-not-enough-time-btc-lock"),
+                        //% "Failed to create multi-signature"
+                        qtTrId("tx-failture-create-multisig"),
+                        //% "Fee is too small"
+                        qtTrId("tx-failture-fee-too-small")
                 };
 
         return Reasons[getTxDescription().m_failureReason];

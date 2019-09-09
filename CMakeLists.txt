@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
 set(VERSION_MAJOR 3)
-set(VERSION_MINOR 0)
+set(VERSION_MINOR 1)
 set(VERSION_REVISION 0)
 set(GIT_COMMIT_HASH "unknown")
 
@@ -9,6 +9,21 @@ set(BEAM_SUFFIX_LOWER_CASE "masternet")
 set(BEAM_SUFFIX_UPPER_CASE "Masternet")
 set(BEAM_TARGET_SUFFIX "-${BEAM_SUFFIX_LOWER_CASE}")
 set(BEAM_DISPLAY_SUFFIX " ${BEAM_SUFFIX_UPPER_CASE}")
+
+if(IOS)
+    add_compile_definitions(_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR)
+    add_compile_definitions(BOOST_NO_AUTO_PTR)
+
+    if (POLICY CMP0025)
+        cmake_policy(SET CMP0025 NEW)
+    endif ()
+
+    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+
+    include_directories(${BOOST_ROOT}/include)
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winvalid-ios-deployment-target")
+endif()
 
 if (BEAM_SIGN_PACKAGE AND WIN32)
   #  add_custom_target(signing ALL DEPENDS beam-wallet-ui COMMENT "Signing Package...")
@@ -191,6 +206,7 @@ if(MSVC)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100") # unreferenced formal parameter
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4324") # '__blake2b_state': structure was padded due to alignment specifier
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2")
@@ -215,7 +231,7 @@ if(MSVC)
     endif()
 
 else()
-    if(NOT ANDROID)
+    if(NOT ANDROID AND NOT IOS)
         if(ARCH_NATIVE)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
         else()
@@ -247,7 +263,9 @@ if(UNIX OR WIN32)
     add_definitions(-DUV_INTERNAL)
 endif()
 
-if(ANDROID)
+if(IOS)
+    include_directories($ENV{BOOST_ROOT_IOS}/include)
+elseif(ANDROID)
     message("ANDROID_ABI: ${ANDROID_ABI}")
     add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
     include_directories($ENV{BOOST_ROOT_ANDROID}/include)
@@ -262,7 +280,11 @@ else()
         add_definitions(-DNOMINMAX)
     endif()
 
-    find_package(Boost REQUIRED)
+    if(APPLE)
+        find_package(Boost COMPONENTS locale regex REQUIRED)
+    else()
+        find_package(Boost REQUIRED)
+    endif()
 
     if(BEAM_USE_STATIC)
 #        include(FindBoost)
@@ -361,8 +383,7 @@ if(ANDROID OR BEAM_BUILD_JNI)
     add_subdirectory(android)
 endif()
 
-# TODO: uncomment this later
-if(NOT ANDROID)
+if(NOT ANDROID AND NOT IOS)
     add_subdirectory(beam)
     add_subdirectory(explorer)
 

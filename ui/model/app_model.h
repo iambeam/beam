@@ -14,11 +14,13 @@
 #pragma once
 
 #include "wallet_model.h"
+#include "swap_coin_client_model.h"
 #include "settings.h"
 #include "messages.h"
 #include "node_model.h"
 #include "helpers.h"
 #include "wallet/secstring.h"
+#include "wallet/private_key_keeper.h"
 #include <memory>
 
 class AppModel final: public QObject
@@ -43,6 +45,9 @@ public:
     WalletSettings& getSettings() const;
     MessageManager& getMessages();
     NodeModel& getNode();
+    SwapCoinClientModel::Ptr getBitcoinClient() const;
+    SwapCoinClientModel::Ptr getLitecoinClient() const;
+    SwapCoinClientModel::Ptr getQtumClient() const;
 
 public slots:
     void onStartedNode();
@@ -54,11 +59,16 @@ signals:
 private:
     void start();
     void startNode();
+    void startWallet();
     void resetWalletImpl();
+    void InitBtcClient();
+    void InitLtcClient();
+    void InitQtumClient();
     void onWalledOpened(const beam::SecString& pass);
 
 private:
     WalletModel::Ptr m_wallet;
+    beam::wallet::IPrivateKeyKeeper::Ptr m_keyKeeper;
     NodeModel m_nodeModel;
     WalletSettings& m_settings;
     MessageManager m_messages;
@@ -67,4 +77,7 @@ private:
     beam::wallet::IWalletDB::Ptr m_db;
     Connections m_nsc; // [n]ode [s]tarting [c]connections
     static AppModel* s_instance;
+    SwapCoinClientModel::Ptr m_bitcoinClient;
+    SwapCoinClientModel::Ptr m_litecoinClient;
+    SwapCoinClientModel::Ptr m_qtumClient;
 };

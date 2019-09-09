@@ -18,6 +18,8 @@
 
 #include "wallet/wallet_client.h"
 
+Q_DECLARE_METATYPE(beam::wallet::TxParameters)
+
 class WalletModel
     : public QObject
     , public beam::wallet::WalletClient
@@ -27,10 +29,11 @@ public:
 
     using Ptr = std::shared_ptr<WalletModel>;
 
-    WalletModel(beam::wallet::IWalletDB::Ptr walletDB, const std::string& nodeAddr, beam::io::Reactor::Ptr reactor);
+    WalletModel(beam::wallet::IWalletDB::Ptr walletDB, beam::wallet::IPrivateKeyKeeper::Ptr keyKeeper, const std::string& nodeAddr, beam::io::Reactor::Ptr reactor);
     ~WalletModel() override;
 
     QString GetErrorString(beam::wallet::ErrorType type);
+    bool isOwnAddress(beam::wallet::WalletID& walletID) const;
     bool isAddressWithCommentExist(const std::string& comment) const;
 
 signals:
@@ -40,6 +43,7 @@ signals:
     void changeCalculated(beam::Amount change);
     void allUtxoChanged(const std::vector<beam::wallet::Coin>& utxos);
     void addressesChanged(bool own, const std::vector<beam::wallet::WalletAddress>& addresses);
+    void swapOffersChanged(beam::wallet::ChangeAction action, const std::vector<beam::wallet::SwapOffer>& offers);
     void generatedNewAddress(const beam::wallet::WalletAddress& walletAddr);
     void newAddressFailed();
     void changeCurrentWalletIDs(beam::wallet::WalletID senderID, beam::wallet::WalletID receiverID);
@@ -57,6 +61,7 @@ private:
     void onChangeCalculated(beam::Amount change) override;
     void onAllUtxoChanged(const std::vector<beam::wallet::Coin>& utxos) override;
     void onAddresses(bool own, const std::vector<beam::wallet::WalletAddress>& addrs) override;
+    void onSwapOffersChanged(beam::wallet::ChangeAction action, const std::vector<beam::wallet::SwapOffer>& offers) override;
     void onGeneratedNewAddress(const beam::wallet::WalletAddress& walletAddr) override;
     void onNewAddressFailed() override;
     void onChangeCurrentWalletIDs(beam::wallet::WalletID senderID, beam::wallet::WalletID receiverID) override;

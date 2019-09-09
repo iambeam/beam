@@ -22,6 +22,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/filesystem.hpp>
 #include "nlohmann/json.hpp"
+#include "utility/std_extension.h"
 
 #define NOSEP
 #define COMMA ", "
@@ -121,21 +122,6 @@ namespace std
         result_type operator()(const argument_type& a) const noexcept
         {
             return boost::hash<argument_type>()(a);
-        }
-    };
-
-    template<class T, size_t N> 
-    struct hash<std::array<T, N>>
-    {
-        auto operator() (const std::array<T, N>& key) const
-        {
-            std::hash<T> hasher;
-            size_t result = 0;
-            for(size_t i = 0; i < N; ++i)
-            {
-                result = (result << 1) ^ hasher(key[i]);
-            }
-            return result;
         }
     };
 }
@@ -676,12 +662,10 @@ namespace beam::wallet
                 return _commited;
             }
 
-            void rollback()
+            void rollback() noexcept
             {
                 int ret = sqlite3_exec(_db, "ROLLBACK;", nullptr, nullptr, nullptr);
-                throwIfError(ret, _db);
-
-                _rollbacked = true;
+                _rollbacked = (ret == SQLITE_OK);
             }
         private:
             sqlite3 * _db;
@@ -814,6 +798,16 @@ namespace beam::wallet
 
     namespace
     {
+        bool IsTableCreated(WalletDB* db, const char* tableName)
+        {
+            std::string req = "SELECT name FROM sqlite_master WHERE type='table' AND name='";
+            req += tableName;
+            req += "';";
+
+            sqlite::Statement stm(db, req.c_str(), false);
+            return stm.step();
+        }
+
         void CreateStorageTable(sqlite3* db)
         {
             const char* req = "CREATE TABLE " STORAGE_NAME " (" ENUM_ALL_STORAGE_FIELDS(LIST_WITH_TYPES, COMMA, ) ");"
@@ -883,6 +877,7 @@ namespace beam::wallet
             ret = sqlite3_exec(*db, "PRAGMA user_version;", nullptr, nullptr, nullptr);
             if (ret != SQLITE_OK)
             {
+                LOG_INFO() << "Applying PRAGMA cipher_migrate...";
                 ret = sqlite3_close(*db);
                 throwIfError(ret, *db);
                 ret = sqlite3_open_v2(path.c_str(), db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
@@ -1057,138 +1052,171 @@ namespace beam::wallet
                     int version = 0;
                     storage::getVar(*walletDB, Version, version);
 
-                    switch (version)
+                    // migration
+                    try
                     {
-                    case DbVersion10:
-                    case DbVersion11:
-                    case DbVersion12:
+                        switch (version)
                         {
-                            LOG_INFO() << "Converting DB from format 10-11";
-
-                            // storage table changes: removed [status], [createHeight], [lockedHeight], added [spentHeight]
-                            // sqlite doesn't support column removal. So instead we'll rename this table, select the data, and insert it to the new table
-                            //
-                            // The missing data, [spentHeight] - can only be deduced strictly if the UTXO has a reference to the spending tx. Otherwise we'll have to put a dummy spentHeight.
-                            // In case of a rollback there's a chance (albeit small) we won't notice the UTXO un-spent status. But in case of such a problem this should be fixed by the "UTXO rescan".
-
+                        case DbVersion10:
+                        case DbVersion11:
+                        case DbVersion12:
                             {
-                                const char* req =
-                                    "ALTER TABLE " STORAGE_NAME " RENAME TO " STORAGE_NAME "_del;"
-                                    "DROP INDEX CoinIndex;"
-                                    "DROP INDEX ConfirmIndex;";
+                                LOG_INFO() << "Converting DB from format 10-11";
 
-                                int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
-                                throwIfError(ret, walletDB->_db);
-                            }
+                                // storage table changes: removed [status], [createHeight], [lockedHeight], added [spentHeight]
+                                // sqlite doesn't support column removal. So instead we'll rename this table, select the data, and insert it to the new table
+                                //
+                                // The missing data, [spentHeight] - can only be deduced strictly if the UTXO has a reference to the spending tx. Otherwise we'll have to put a dummy spentHeight.
+                                // In case of a rollback there's a chance (albeit small) we won't notice the UTXO un-spent status. But in case of such a problem this should be fixed by the "UTXO rescan".
 
-                            CreateStorageTable(walletDB->_db);
-
-                            {
-                                const char* req = "SELECT * FROM " STORAGE_NAME "_del;";
-                                
-                                for (sqlite::Statement stm(walletDB.get(), req);  stm.step(); )
+                                if (!IsTableCreated(walletDB.get(), STORAGE_NAME "_del"))
                                 {
-                                    Coin coin;
-                                    stm.get(0, coin.m_ID.m_Type);
-                                    stm.get(1, coin.m_ID.m_SubIdx);
-                                    stm.get(2, coin.m_ID.m_Idx);
-                                    stm.get(3, coin.m_ID.m_Value);
+                                    const char* req =
+                                        "ALTER TABLE " STORAGE_NAME " RENAME TO " STORAGE_NAME "_del;"
+                                        "DROP INDEX CoinIndex;"
+                                        "DROP INDEX ConfirmIndex;";
 
-                                    uint32_t status = 0;
-                                    stm.get(4, status);
+                                    int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
+                                    throwIfError(ret, walletDB->_db);
+                                }
 
-                                    stm.get(5, coin.m_maturity);
-                                    // createHeight - skip
-                                    stm.get(7, coin.m_confirmHeight);
-                                    // lockedHeight - skip
-                                    stm.get(9, coin.m_createTxId);
-                                    stm.get(10, coin.m_spentTxId);
-                                    stm.get(11, coin.m_sessionId);
+                                if (!IsTableCreated(walletDB.get(), STORAGE_NAME))
+                                {
+                                    CreateStorageTable(walletDB->_db);
+                                }
 
-                                    if (Coin::Status::Spent == static_cast<Coin::Status>(status))
+                                {
+                                    const char* req = "SELECT * FROM " STORAGE_NAME "_del;";
+                                
+                                    for (sqlite::Statement stm(walletDB.get(), req);  stm.step(); )
                                     {
-                                        // try to guess the spentHeight
-                                        coin.m_spentHeight = coin.m_maturity; // init guess
+                                        Coin coin;
+                                        stm.get(0, coin.m_ID.m_Type);
+                                        stm.get(1, coin.m_ID.m_SubIdx);
+                                        stm.get(2, coin.m_ID.m_Idx);
+                                        stm.get(3, coin.m_ID.m_Value);
 
-                                        if (coin.m_spentTxId)
-                                            storage::getTxParameter(*walletDB, coin.m_spentTxId.get(), TxParameterID::KernelProofHeight, coin.m_spentHeight);
+                                        uint32_t status = 0;
+                                        stm.get(4, status);
+
+                                        stm.get(5, coin.m_maturity);
+                                        // createHeight - skip
+                                        stm.get(7, coin.m_confirmHeight);
+                                        // lockedHeight - skip
+                                        stm.get(9, coin.m_createTxId);
+                                        stm.get(10, coin.m_spentTxId);
+                                        stm.get(11, coin.m_sessionId);
+
+                                        if (Coin::Status::Spent == static_cast<Coin::Status>(status))
+                                        {
+                                            // try to guess the spentHeight
+                                            coin.m_spentHeight = coin.m_maturity; // init guess
+
+                                            if (coin.m_spentTxId)
+                                            {
+                                                // we cannot use getTxParameter since it uses newer db scheme
+                                                //storage::getTxParameter(*walletDB, coin.m_spentTxId.get(), TxParameterID::KernelProofHeight, coin.m_spentHeight);
+                                                sqlite::Statement stm2(walletDB.get(), "SELECT value FROM " TX_PARAMS_NAME " WHERE txID=?1 AND paramID=?2;");
+                                                stm2.bind(1, coin.m_spentTxId.get());
+                                                stm2.bind(2, TxParameterID::KernelProofHeight);
+
+                                                if (stm2.step())
+                                                {
+                                                    ByteBuffer buf;
+                                                    stm2.get(0, buf);
+                                                    Height h = 0;
+                                                    if (fromByteBuffer(buf, h))
+                                                    {
+                                                        coin.m_spentHeight = h;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        walletDB->saveCoin(coin);
                                     }
+                                }
 
-                                    walletDB->saveCoin(coin);
+                                {
+                                    const char* req = "DROP TABLE " STORAGE_NAME "_del;";
+                                    int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
+                                    throwIfError(ret, walletDB->_db);
                                 }
                             }
 
+                            // no break;
+
+                        case DbVersion13:
+                            LOG_INFO() << "Converting DB to format 13...";
+
+                            CreateWalletMessageTable(walletDB->_db);
+                            CreatePrivateVariablesTable(walletDB->m_PrivateDB);
+
+                            if (!MoveSeedToPrivateVariables(*walletDB))
                             {
-                                const char* req = "DROP TABLE " STORAGE_NAME "_del;";
-                                int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
-                                throwIfError(ret, walletDB->_db);
+                                return Ptr();
+                            }
+
+                        case DbVersion14:
+                            {
+                                LOG_INFO() << "Converting DB to format 14...";
+
+                                // tx_params table changed: added new column [subTxID]
+                                // move old data to temp table
+                                {
+                                    const char* req = "ALTER TABLE " TX_PARAMS_NAME " RENAME TO " TX_PARAMS_NAME "_del;";
+                                    int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
+                                    throwIfError(ret, walletDB->_db);
+                                }
+
+                                // create new table
+                                CreateTxParamsTable(walletDB->_db);
+
+                                // migration
+                                {
+                                    const char* req = "INSERT INTO " TX_PARAMS_NAME " (" ENUM_TX_PARAMS_FIELDS(LIST, COMMA, ) ") SELECT \"txID\", ?1 as \"subTxID\", \"paramID\", \"value\" FROM " TX_PARAMS_NAME "_del;";
+                                    sqlite::Statement stm(walletDB.get(), req);
+                                    stm.bind(1, kDefaultSubTxID);
+                                    stm.step();
+                                }
+
+                                // remove tmp table
+                                {
+                                    const char* req = "DROP TABLE " TX_PARAMS_NAME "_del;";
+                                    int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
+                                    throwIfError(ret, walletDB->_db);
+                                }
+
+                            }
+
+                            storage::setVar(*walletDB, Version, DbVersion);
+                            // no break;
+
+                        case DbVersion:
+
+                            // drop private variables from public database for cold wallet 
+                            if (separateDBForPrivateData && !DropPrivateVariablesFromPublicDatabase(*walletDB))
+                            {
+                                return Ptr();
+                            }
+
+                            break; // ok
+
+                        default:
+                            {
+                                LOG_DEBUG() << "Invalid DB version: " << version << ". Expected: " << DbVersion;
+                                return Ptr();
                             }
                         }
 
-                        // no break;
-
-                    case DbVersion13:
-                        CreateWalletMessageTable(walletDB->_db);
-                        CreatePrivateVariablesTable(walletDB->m_PrivateDB);
-
-                        if (!MoveSeedToPrivateVariables(*walletDB))
-                        {
-                            return Ptr();
-                        }
-
-                    case DbVersion14:
-                        {
-                            LOG_INFO() << "Converting DB from format 14";
-
-                            // tx_params table changed: added new column [subTxID]
-                            // move old data to temp table
-                            {
-                                const char* req = "ALTER TABLE " TX_PARAMS_NAME " RENAME TO " TX_PARAMS_NAME "_del;";
-                                int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
-                                throwIfError(ret, walletDB->_db);
-                            }
-
-                            // create new table
-                            CreateTxParamsTable(walletDB->_db);
-
-                            // migration
-                            {
-                                const char* req = "INSERT INTO " TX_PARAMS_NAME " (" ENUM_TX_PARAMS_FIELDS(LIST, COMMA, ) ") SELECT \"txID\", ?1 as \"subTxID\", \"paramID\", \"value\" FROM " TX_PARAMS_NAME "_del;";
-                                sqlite::Statement stm(walletDB.get(), req);
-                                stm.bind(1, kDefaultSubTxID);
-                                stm.step();
-                            }
-
-                            // remove tmp table
-                            {
-                                const char* req = "DROP TABLE " TX_PARAMS_NAME "_del;";
-                                int ret = sqlite3_exec(walletDB->_db, req, NULL, NULL, NULL);
-                                throwIfError(ret, walletDB->_db);
-                            }
-
-                        }
-
-                        storage::setVar(*walletDB, Version, DbVersion);
-                        // no break;
-
-                    case DbVersion:
-
-                        // drop private variables from public database for cold wallet 
-                        if (separateDBForPrivateData && !DropPrivateVariablesFromPublicDatabase(*walletDB))
-                        {
-                            return Ptr();
-                        }
-
-                        break; // ok
-
-                    default:
-                        {
-                            LOG_DEBUG() << "Invalid DB version: " << version << ". Expected: " << DbVersion;
-                            return Ptr();
-                        }
+                        walletDB->flushDB();
                     }
-
-                    walletDB->flushDB();
+                    catch (...)
+                    {
+                        LOG_ERROR() << "Database migration failed";
+                        walletDB->rollbackDB();
+                        return {};
+                    }
                 }
                 {
                     const char* req = "SELECT name FROM sqlite_master WHERE type='table' AND name='" STORAGE_NAME "';";
@@ -1219,13 +1247,6 @@ namespace beam::wallet
                         return Ptr();
                     }
                 }
-
-                {
-                    const char* req = "CREATE TABLE IF NOT EXISTS " TX_PARAMS_NAME " (" ENUM_TX_PARAMS_FIELDS(LIST_WITH_TYPES, COMMA, ) ", PRIMARY KEY (txID, subTxID, paramID)) WITHOUT ROWID;";
-                    int ret = sqlite3_exec(walletDB->_db, req, nullptr, nullptr, nullptr);
-                    throwIfError(ret, walletDB->_db);
-                }
-
                 {
                     ECC::NoLeak<ECC::Hash::Value> seed;
                     if (walletDB->getPrivateVarRaw(WalletSeed, &seed.V, sizeof(seed.V)))
@@ -1255,9 +1276,8 @@ namespace beam::wallet
 
             LOG_ERROR() << path << " not found, please init the wallet before.";
         }
-        catch (const runtime_error&)
+        catch (const exception&)
         {
-
         }
 
         return Ptr();
@@ -1729,6 +1749,15 @@ namespace beam::wallet
             stm.getBlobSafe(0, data, size);
     }
 
+    void WalletDB::removeVarRaw(const char* name)
+    {
+        const char* req = "DELETE FROM " VARIABLES_NAME " WHERE name=?1;";
+        sqlite::Statement stm(this, req);
+
+        stm.bind(1, name);
+        stm.step();
+    }
+
     void WalletDB::setPrivateVarRaw(const char* name, const void* data, size_t size)
     {
         const char* req = "INSERT or REPLACE INTO " PRIVATE_VARIABLES_NAME " (" VARIABLES_FIELDS ") VALUES(?1, ?2);";
@@ -1881,17 +1910,18 @@ namespace beam::wallet
     boost::optional<TxDescription> WalletDB::getTx(const TxID& txId) const
     {
         // load only simple TX that supported by TxDescription
-        const char* req = "SELECT * FROM " TX_PARAMS_NAME " WHERE txID=?1 AND subTxID=?2;";
+        const char* req = "SELECT * FROM " TX_PARAMS_NAME " WHERE txID=?1;";
         sqlite::Statement stm(this, req);
         stm.bind(1, txId);
-        stm.bind(2, kDefaultSubTxID);
 
-        TxDescription txDescription;
-        txDescription.m_txId = txId;
+        TxDescription txDescription(txId);
 
-        const std::set<TxParameterID> mandatoryParams{ TxParameterID::Amount, TxParameterID::Fee,
-            TxParameterID::PeerID,
-            TxParameterID::MyID, TxParameterID::CreateTime,
+        const std::set<TxParameterID> mandatoryParams{ 
+            TxParameterID::Amount,
+            TxParameterID::Fee,
+         //   TxParameterID::PeerID,
+            TxParameterID::MyID, 
+            TxParameterID::CreateTime,
             TxParameterID::IsSender };
         std::set<TxParameterID> gottenParams;
 
@@ -1900,59 +1930,66 @@ namespace beam::wallet
             TxParameter parameter = {};
             int colIdx = 0;
             ENUM_TX_PARAMS_FIELDS(STM_GET_LIST, NOSEP, parameter);
+            auto parameterID = static_cast<TxParameterID>(parameter.m_paramID);
 
-            gottenParams.emplace(static_cast<TxParameterID>(parameter.m_paramID));
+            txDescription.SetParameter(parameterID, parameter.m_value, static_cast<SubTxID>(parameter.m_subTxID));
 
-            switch (static_cast<TxParameterID>(parameter.m_paramID))
+            if (parameter.m_subTxID == kDefaultSubTxID)
             {
-            case TxParameterID::TransactionType:
-                deserialize(txDescription.m_txType, parameter.m_value);
-                break;
-            case TxParameterID::Amount:
-                deserialize(txDescription.m_amount, parameter.m_value);
-                break;
-            case TxParameterID::Fee:
-                deserialize(txDescription.m_fee, parameter.m_value);
-                break;
-            case TxParameterID::MinHeight:
-                deserialize(txDescription.m_minHeight, parameter.m_value);
-                break;
-            case TxParameterID::PeerID:
-                deserialize(txDescription.m_peerId, parameter.m_value);
-                break;
-            case TxParameterID::MyID:
-                deserialize(txDescription.m_myId, parameter.m_value);
-                break;
-            case TxParameterID::CreateTime:
-                deserialize(txDescription.m_createTime, parameter.m_value);
-                break;
-            case TxParameterID::IsSender:
-                deserialize(txDescription.m_sender, parameter.m_value);
-                break;
-            case TxParameterID::Message:
-                deserialize(txDescription.m_message, parameter.m_value);
-                break;
-            case TxParameterID::Change:
-                deserialize(txDescription.m_change, parameter.m_value);
-                break;
-            case TxParameterID::ModifyTime:
-                deserialize(txDescription.m_modifyTime, parameter.m_value);
-                break;
-            case TxParameterID::Status:
-                deserialize(txDescription.m_status, parameter.m_value);
-                break;
-            case TxParameterID::KernelID:
-                deserialize(txDescription.m_kernelID, parameter.m_value);
-                break;
-            case TxParameterID::FailureReason:
-                deserialize(txDescription.m_failureReason, parameter.m_value);
-                break;
-            case TxParameterID::IsSelfTx:
-                deserialize(txDescription.m_selfTx, parameter.m_value);
-                break;
-            default:
-                break; // suppress warning
+                gottenParams.emplace(parameterID);
+
+                switch (parameterID)
+                {
+                case TxParameterID::TransactionType:
+                    deserialize(txDescription.m_txType, parameter.m_value);
+                    break;
+                case TxParameterID::Amount:
+                    deserialize(txDescription.m_amount, parameter.m_value);
+                    break;
+                case TxParameterID::Fee:
+                    deserialize(txDescription.m_fee, parameter.m_value);
+                    break;
+                case TxParameterID::MinHeight:
+                    deserialize(txDescription.m_minHeight, parameter.m_value);
+                    break;
+                case TxParameterID::PeerID:
+                    deserialize(txDescription.m_peerId, parameter.m_value);
+                    break;
+                case TxParameterID::MyID:
+                    deserialize(txDescription.m_myId, parameter.m_value);
+                    break;
+                case TxParameterID::CreateTime:
+                    deserialize(txDescription.m_createTime, parameter.m_value);
+                    break;
+                case TxParameterID::IsSender:
+                    deserialize(txDescription.m_sender, parameter.m_value);
+                    break;
+                case TxParameterID::Message:
+                    deserialize(txDescription.m_message, parameter.m_value);
+                    break;
+                case TxParameterID::Change:
+                    deserialize(txDescription.m_change, parameter.m_value);
+                    break;
+                case TxParameterID::ModifyTime:
+                    deserialize(txDescription.m_modifyTime, parameter.m_value);
+                    break;
+                case TxParameterID::Status:
+                    deserialize(txDescription.m_status, parameter.m_value);
+                    break;
+                case TxParameterID::KernelID:
+                    deserialize(txDescription.m_kernelID, parameter.m_value);
+                    break;
+                case TxParameterID::FailureReason:
+                    deserialize(txDescription.m_failureReason, parameter.m_value);
+                    break;
+                case TxParameterID::IsSelfTx:
+                    deserialize(txDescription.m_selfTx, parameter.m_value);
+                    break;
+                default:
+                    break; // suppress warning
+                }
             }
+
         }
 
         if (std::includes(gottenParams.begin(), gottenParams.end(), mandatoryParams.begin(), mandatoryParams.end()))
@@ -2298,6 +2335,21 @@ namespace beam::wallet
         }
     }
 
+    void WalletDB::rollbackDB()
+    {
+        if (m_IsFlushPending)
+        {
+            assert(m_FlushTimer);
+            m_FlushTimer->cancel();
+            m_IsFlushPending = false;
+            if (m_DbTransaction)
+            {
+                m_DbTransaction->rollback();
+                m_DbTransaction.reset();
+            }
+        }
+    }
+
     void WalletDB::onModified()
     {
         if (!m_IsFlushPending)
@@ -2334,11 +2386,11 @@ namespace beam::wallet
         for (auto sub : m_subscribers) sub->onCoinsChanged();
     }
 
-    void WalletDB::notifyTransactionChanged(ChangeAction action, vector<TxDescription>&& items)
+    void WalletDB::notifyTransactionChanged(ChangeAction action, const vector<TxDescription>& items)
     {
         for (auto sub : m_subscribers)
         {
-            sub->onTransactionChanged(action, move(items));
+            sub->onTransactionChanged(action, items);
         }
     }
 
@@ -2717,26 +2769,27 @@ namespace beam::wallet
             });
         }
 
-        WalletAddress createAddress(IWalletDB& walletDB)
+        WalletAddress createAddress(IWalletDB& walletDB, IPrivateKeyKeeper::Ptr keyKeeper)
         {
             WalletAddress newAddress;
             newAddress.m_createTime = beam::getTimestamp();
             newAddress.m_OwnID = walletDB.AllocateKidRange(1);
-            newAddress.m_walletID = generateWalletIDFromIndex(walletDB, newAddress.m_OwnID);
+            newAddress.m_walletID = generateWalletIDFromIndex(keyKeeper, newAddress.m_OwnID);
 
             return newAddress;
         }
 
-        WalletID generateWalletIDFromIndex(IWalletDB& walletDB, uint64_t ownID)
+        WalletID generateWalletIDFromIndex(IPrivateKeyKeeper::Ptr keyKeeper, uint64_t ownID)
         {
-            if (!walletDB.get_MasterKdf())
+            if (!keyKeeper->get_SbbsKdf())
             {
                 throw CannotGenerateSecretException();
             }
             WalletID walletID(Zero);
 
             ECC::Scalar::Native sk;
-            walletDB.get_MasterKdf()->DeriveKey(sk, Key::ID(ownID, Key::Type::Bbs));
+
+            keyKeeper->get_SbbsKdf()->DeriveKey(sk, Key::ID(ownID, Key::Type::Bbs));
 
             proto::Sk2Pk(walletID.m_Pk, sk);
 
@@ -2807,7 +2860,7 @@ namespace beam::wallet
             const string OwnAddressesName = "OwnAddresses";
             const string TransactionParametersName = "TransactionParameters";
 
-            bool ImportAddressesFromJson(IWalletDB& db, const json& obj)
+            bool ImportAddressesFromJson(IWalletDB& db, IPrivateKeyKeeper::Ptr keyKeeper, const json& obj)
             {
                 if (obj.find(OwnAddressesName) == obj.end())
                 {
@@ -2821,7 +2874,7 @@ namespace beam::wallet
                     if (address.m_walletID.FromHex(jsonAddress["WalletID"]))
                     {
                         address.m_OwnID = jsonAddress["Index"];
-                        if (address.m_walletID == generateWalletIDFromIndex(db, address.m_OwnID))
+                        if (address.m_walletID == generateWalletIDFromIndex(keyKeeper, address.m_OwnID))
                         {
                             //{ "SubIndex", 0 },
                             address.m_label = jsonAddress["Label"];
@@ -2839,7 +2892,7 @@ namespace beam::wallet
                 return true;
             }
 
-            bool ImportTransactionsFromJson(IWalletDB& db, const json& obj)
+            bool ImportTransactionsFromJson(IWalletDB& db, IPrivateKeyKeeper::Ptr keyKeeper, const json& obj)
             {
                 if (obj.find(TransactionParametersName) == obj.end())
                 {
@@ -2881,7 +2934,7 @@ namespace beam::wallet
                     }
 
                     auto waddr = db.getAddress(wid);
-                    if (waddr && (waddr->m_OwnID == 0 || wid != generateWalletIDFromIndex(db, waddr->m_OwnID)))
+                    if (waddr && (waddr->m_OwnID == 0 || wid != generateWalletIDFromIndex(keyKeeper, waddr->m_OwnID)))
                     {
                         LOG_ERROR() << "Transaction " << txPair.first << " was not imported. Invalid address parameter";
                         continue;
@@ -2889,7 +2942,7 @@ namespace beam::wallet
 
                     auto addressIt = paramsMap.find(TxParameterID::MyAddressID);
                     if (addressIt != paramsMap.end() && (!fromByteBuffer(addressIt->second.m_value, myAddrId) ||
-                        wid != generateWalletIDFromIndex(db, myAddrId)))
+                        wid != generateWalletIDFromIndex(keyKeeper, myAddrId)))
                     {
                         LOG_ERROR() << "Transaction " << txPair.first << " was not imported. Invalid MyAddressID parameter";
                         continue;
@@ -2965,12 +3018,12 @@ namespace beam::wallet
             return res.dump();
         }
 
-        bool ImportDataFromJson(IWalletDB& db, const char* data, size_t size)
+        bool ImportDataFromJson(IWalletDB& db, IPrivateKeyKeeper::Ptr keyKeeper, const char* data, size_t size)
         {
             try
             {
                 json obj = json::parse(data, data + size);
-                return ImportAddressesFromJson(db, obj) && ImportTransactionsFromJson(db, obj);
+                return ImportAddressesFromJson(db, keyKeeper, obj) && ImportTransactionsFromJson(db, keyKeeper, obj);
             }
             catch (const nlohmann::detail::exception& e)
             {

@@ -29,7 +29,7 @@ add_library(external_pow STATIC
 
 target_link_libraries(external_pow PRIVATE p2p pow core OpenSSL::SSL)
 
-if (NOT ANDROID)
+if (NOT ANDROID AND NOT IOS)
     find_package(Boost REQUIRED program_options)
     add_executable(miner_client miner_client.cpp)
     target_link_libraries(miner_client PRIVATE external_pow Boost::boost Boost::program_options)
@@ -45,4 +45,3 @@ if (NOT ANDROID)
 
     add_subdirectory(unittests)
 endif()
-

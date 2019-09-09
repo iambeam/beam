@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.11)
 
 set(HTTP_SRC
     http_msg_reader.cpp
@@ -9,5 +9,10 @@ set(HTTP_SRC
 
 add_library(http STATIC ${HTTP_SRC})
 target_link_libraries(http PUBLIC utility)
+
+target_include_directories(http
+    INTERFACE 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+)
 
 add_subdirectory(unittests)

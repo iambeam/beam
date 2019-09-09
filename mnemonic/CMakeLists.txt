@@ -19,8 +19,10 @@ target_link_libraries(${TARGET_NAME}
         core
         Boost::boost
         pbkdf
-
-
 )
+
+if(APPLE)
+    target_link_libraries(${TARGET_NAME} PRIVATE Boost::regex)
+endif()
 
 add_subdirectory(unittests)

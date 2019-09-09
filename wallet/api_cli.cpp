@@ -38,9 +38,7 @@
 
 #include "wallet/wallet_db.h"
 #include "wallet/wallet_network.h"
-#include "wallet/bitcoin/options.h"
-#include "wallet/litecoin/options.h"
-#include "wallet/qtum/options.h"
+#include "wallet/local_private_key_keeper.h"
 
 #include "nlohmann/json.hpp"
 #include "version.h"
@@ -55,7 +53,12 @@ using namespace beam::wallet;
 
 namespace
 {
-    const char* MinimumFeeError = "Failed to initiate the send operation. The minimum fee is 100 GROTH.";
+    std::string getMinimumFeeError(Amount minimumFee)
+    {
+        std::stringstream ss;
+        ss << "Failed to initiate the send operation. The minimum fee is " << minimumFee << " GROTH.";
+        return ss.str();
+    }
 
     struct TlsOptions
     {
@@ -228,6 +231,7 @@ namespace
                 , _wallet(wallet)
                 , _api(*this, acl)
                 , _wnet(wnet)
+                , _keyKeeper(std::make_shared<LocalPrivateKeyKeeper>(_walletDB))
             {
                 _walletDB->subscribe(this);
             }
@@ -299,7 +303,7 @@ namespace
             {
                 LOG_DEBUG() << "CreateAddress(id = " << id << ")";
 
-                WalletAddress address = storage::createAddress(*_walletDB);
+                WalletAddress address = storage::createAddress(*_walletDB, _keyKeeper);
                 FillAddressData(data, address);
 
                 _walletDB->saveAddress(address);
@@ -396,7 +400,7 @@ namespace
                     }
                     else
                     {
-                        WalletAddress senderAddress = storage::createAddress(*_walletDB);
+                        WalletAddress senderAddress = storage::createAddress(*_walletDB, _keyKeeper);
                         _walletDB->saveAddress(senderAddress);
 
                         from = senderAddress.m_walletID;     
@@ -421,13 +425,21 @@ namespace
                         coins = data.coins ? *data.coins : CoinIDList();
                     }
 
-                    if (data.fee < MinimumFee)
+                    auto minimumFee = std::max(wallet::GetMinimumFee(2), DefaultFee); // receivers's output + change
+                    if (data.fee < minimumFee)
                     {
-                        doError(id, INTERNAL_JSON_RPC_ERROR, MinimumFeeError);
+                        doError(id, INTERNAL_JSON_RPC_ERROR, getMinimumFeeError(minimumFee));
                         return;
                     }
 
-                    auto txId = _wallet.transfer_money(from, data.address, data.value, data.fee, coins, true, kDefaultTxLifetime, kDefaultTxResponseTime, std::move(message), true);
+                    
+                    auto txId = _wallet.StartTransaction(CreateSimpleTransactionParameters()
+                        .SetParameter(TxParameterID::MyID, from)
+                        .SetParameter(TxParameterID::PeerID, data.address)
+                        .SetParameter(TxParameterID::Amount, data.value)
+                        .SetParameter(TxParameterID::Fee, data.fee)
+                        .SetParameter(TxParameterID::PreselectedCoins, coins)
+                        .SetParameter(TxParameterID::Message, message));
 
                     doResponse(id, Send::Response{ txId });
                 }
@@ -471,16 +483,19 @@ namespace
                 LOG_DEBUG() << "], fee = " << data.fee;
                 try
                 {
-                     WalletAddress senderAddress = storage::createAddress(*_walletDB);
+                     WalletAddress senderAddress = storage::createAddress(*_walletDB, _keyKeeper);
                     _walletDB->saveAddress(senderAddress);
 
-                    if (data.fee < MinimumFee)
+                    auto minimumFee = std::max(wallet::GetMinimumFee(data.coins.size() + 1), DefaultFee); // +1 extra output for change 
+                    if (data.fee < minimumFee)
                     {
-                        doError(id, INTERNAL_JSON_RPC_ERROR, MinimumFeeError);
+                        doError(id, INTERNAL_JSON_RPC_ERROR, getMinimumFeeError(minimumFee));
                         return;
                     }
 
-                    auto txId = _wallet.split_coins(senderAddress.m_walletID, data.coins, data.fee);
+                    auto txId = _wallet.StartTransaction(CreateSplitTransactionParameters(senderAddress.m_walletID, data.coins)
+                        .SetParameter(TxParameterID::Fee, data.fee));
+
                     doResponse(id, Send::Response{ txId });
                 }
                 catch(...)
@@ -499,7 +514,7 @@ namespace
                 {
                     if (tx->canCancel())
                     {
-                        _wallet.cancel_tx(tx->m_txId);
+                        _wallet.CancelTransaction(tx->m_txId);
                         TxCancel::Response result{ true };
                         doResponse(id, result);
                     }
@@ -701,6 +716,7 @@ namespace
             Wallet& _wallet;
             WalletApi _api;
             IWalletMessageEndpoint& _wnet;
+            IPrivateKeyKeeper::Ptr _keyKeeper;
         };
 
         class TcpApiConnection : public ApiConnection
@@ -1072,7 +1088,8 @@ int main(int argc, char* argv[])
 
         LogRotation logRotation(*reactor, LOG_ROTATION_PERIOD, options.logCleanupPeriod);
 
-        Wallet wallet{ walletDB };
+        auto keyKeeper = std::make_shared<LocalPrivateKeyKeeper>(walletDB);
+        Wallet wallet{ walletDB, keyKeeper };
 
         auto nnet = std::make_shared<proto::FlyClient::NetworkStd>(wallet);
         nnet->m_Cfg.m_PollPeriod_ms = options.pollPeriod_ms.value;
@@ -1094,7 +1111,7 @@ int main(int argc, char* argv[])
         nnet->m_Cfg.m_vNodes.push_back(node_addr);
         nnet->Connect();
 
-        auto wnet = std::make_shared<WalletNetworkViaBbs>(wallet, nnet, walletDB);
+        auto wnet = std::make_shared<WalletNetworkViaBbs>(wallet, nnet, walletDB, keyKeeper);
 		wallet.AddMessageEndpoint(wnet);
         wallet.SetNodeEndpoint(nnet);
 

@@ -62,6 +62,7 @@ list(APPEND SUPPORTED_LANGS "es_ES")
 list(APPEND SUPPORTED_LANGS "be_BY")
 list(APPEND SUPPORTED_LANGS "vi_VI")
 list(APPEND SUPPORTED_LANGS "zh_CN")
+list(APPEND SUPPORTED_LANGS "fi_FI")
 list(APPEND SUPPORTED_LANGS "fr_FR")
 list(APPEND SUPPORTED_LANGS "ja_JP")
 list(APPEND SUPPORTED_LANGS "ko_KR")
@@ -114,6 +115,17 @@ set(UI_SRC
     viewmodel/payment_item.cpp
     viewmodel/qml_globals.h
     viewmodel/qml_globals.cpp
+    viewmodel/receive_swap_view.h
+    viewmodel/receive_swap_view.cpp
+    viewmodel/currencies.h
+    viewmodel/send_swap_view.h
+    viewmodel/send_swap_view.cpp
+    viewmodel/swap_offer_item.cpp
+    viewmodel/swap_offers_list.cpp
+    viewmodel/swap_offers_view.cpp
+    viewmodel/helpers/list_model.h
+    viewmodel/helpers/sortfilterproxymodel.h
+    viewmodel/helpers/sortfilterproxymodel.cpp
 
 	model/wallet_model.h
 	model/wallet_model.cpp
@@ -132,6 +144,8 @@ set(UI_SRC
     model/helpers.h
     model/translator.cpp
     model/translator.h
+    model/swap_coin_client_model.cpp
+    model/swap_coin_client_model.h
 )
 
 beam_translations_update_ts("${SUPPORTED_LANGS}" TS_FILES)
@@ -216,7 +230,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE quazip_static)
 	target_link_libraries(${TARGET_NAME} PRIVATE node external_pow)
 #endif()
 
-target_link_libraries(${TARGET_NAME} PRIVATE wallet mnemonic Qt5::Qml Qt5::Quick Qt5::Svg Qt5::PrintSupport)
+target_link_libraries(${TARGET_NAME} PRIVATE wallet swap mnemonic Qt5::Qml Qt5::Quick Qt5::Svg Qt5::PrintSupport)
 
 if (BEAM_SIGN_PACKAGE AND WIN32)
     add_custom_command(

@@ -60,6 +60,8 @@ if (MSVC)
 endif()
 
 add_library(utility STATIC ${UTILITY_SRC} ${IO_SRC})
+target_compile_features(utility PUBLIC cxx_std_17)
+
 
 #if(NOT ANDROID)
     add_library(cli STATIC ${CLI_SRC})
@@ -77,8 +79,11 @@ if (UNIX)
     target_link_libraries(utility PRIVATE dl)
 endif()
 
-
-if(ANDROID)
+if (IOS)
+    target_link_libraries(utility 
+	$ENV{BOOST_ROOT_IOS}/lib/libboost_filesystem.a
+	$ENV{BOOST_ROOT_IOS}/lib/libboost_system.a)
+elseif(ANDROID)
     if(ANDROID_ABI STREQUAL "armeabi-v7a")
         target_link_libraries(utility PRIVATE
             $ENV{BOOST_ROOT_ANDROID}/libs/${ANDROID_ABI}/libboost_program_options-clang-mt-a32-1_68.a 
