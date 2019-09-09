@@ -25,6 +25,7 @@ Q_OBJECT
     Q_PROPERTY(QString userName         READ userName            NOTIFY userChanged)
     Q_PROPERTY(QString displayName      READ displayName         NOTIFY displayNameChanged)
     Q_PROPERTY(QString comment          READ comment             NOTIFY commentChanged)
+    Q_PROPERTY(QString amount           READ getAmount           NOTIFY amountChanged)
     Q_PROPERTY(QString sentAmount       READ getSentAmount       NOTIFY sentAmountChanged)
     Q_PROPERTY(QString receivedAmount   READ getReceivedAmount   NOTIFY receivedAmountChanged)
     Q_PROPERTY(QString change           READ change              NOTIFY changeChanged)
@@ -49,6 +50,8 @@ public:
     QString userName() const;
     QString displayName() const;
     QString comment() const;
+    QString getAmount() const;
+    double getAmountValue() const;
     QString getSentAmount() const;
     double getSentAmountValue() const;
     QString getReceivedAmount() const;
