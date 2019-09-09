@@ -48,6 +48,7 @@ namespace beam::wallet
         : private IWalletObserver
         , private IWalletModelAsync
         , private IWalletDB::IRecoveryProgress
+        , private IPrivateKeyKeeper::Handler
     {
     public:
         WalletClient(IWalletDB::Ptr walletDB, const std::string& nodeAddr, io::Reactor::Ptr reactor, IPrivateKeyKeeper::Ptr keyKeeper);
@@ -86,6 +87,10 @@ namespace beam::wallet
         virtual void onAddressChecked(const std::string& addr, bool isValid) = 0;
         virtual void onImportRecoveryProgress(uint64_t done, uint64_t total) = 0;
 
+#if defined(BEAM_HW_WALLET)
+        virtual void onShowTrezorMessage() = 0;
+#endif
+
     private:
 
         void onCoinsChanged() override;
@@ -93,6 +98,7 @@ namespace beam::wallet
         void onSystemStateChanged() override;
         void onAddressChanged(ChangeAction action, const std::vector<WalletAddress>& items) override;
         void onSyncProgress(int done, int total) override;
+        void showKeyKeeperMessage() override;
 
         void sendMoney(const WalletID& receiver, const std::string& comment, Amount&& amount, Amount&& fee) override;
         void sendMoney(const WalletID& sender, const WalletID& receiver, const std::string& comment, Amount&& amount, Amount&& fee) override;

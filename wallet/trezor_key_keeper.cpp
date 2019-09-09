@@ -168,7 +168,16 @@ namespace beam::wallet
         txData.nonceSlot = (uint32_t)nonceSlot;
         txData.offset = offset;
 
+        for (auto handler : m_handlers)
+            handler->showKeyKeeperMessage();
+
         return m_hwWallet.signTransactionSync(inputs, outputs, txData);
     }
 
+    void TrezorKeyKeeper::subscribe(Handler::Ptr handler)
+    {
+        assert(std::find(m_handlers.begin(), m_handlers.end(), handler) == m_handlers.end());
+
+        m_handlers.push_back(handler);
+    }
 }

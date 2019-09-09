@@ -36,8 +36,13 @@ MainViewModel::MainViewModel()
     , m_timer(this)
 {
     m_timer.setSingleShot(true);
+
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(lockWallet()));
     connect(&m_settings, SIGNAL(lockTimeoutChanged()), this, SLOT(onLockTimeoutChanged()));
+
+#if defined(BEAM_HW_WALLET)
+    connect(AppModel::getInstance().getWallet().get(), SIGNAL(showTrezorMessage()), this, SLOT(showTrezorMessage()));
+#endif
 
     onLockTimeoutChanged();
 }
@@ -51,6 +56,13 @@ void MainViewModel::lockWallet()
 {
     emit gotoStartScreen();
 }
+
+#if defined(BEAM_HW_WALLET)
+void MainViewModel::showTrezorMessage()
+{
+    // !TODO: show Trezor popup here
+}
+#endif
 
 void MainViewModel::onLockTimeoutChanged()
 {

@@ -196,6 +196,7 @@ namespace beam::wallet
         , m_nodeAddrStr(nodeAddr)
         , m_keyKeeper(keyKeeper)
     {
+        m_keyKeeper->subscribe(this);
     }
 
     WalletClient::~WalletClient()
@@ -432,6 +433,13 @@ namespace beam::wallet
     void WalletClient::onSyncProgress(int done, int total)
     {
         onSyncProgressUpdated(done, total);
+    }
+
+    void WalletClient::showKeyKeeperMessage()
+    {
+#if defined(BEAM_HW_WALLET)
+        onShowTrezorMessage();
+#endif
     }
 
     void WalletClient::sendMoney(const WalletID& receiver, const std::string& comment, Amount&& amount, Amount&& fee)

@@ -165,6 +165,13 @@ void WalletModel::onImportRecoveryProgress(uint64_t done, uint64_t total)
 {
 }
 
+#if defined(BEAM_HW_WALLET)
+void WalletModel::onShowTrezorMessage()
+{
+    emit showTrezorMessage();
+}
+#endif
+
 void WalletModel::onGeneratedNewAddress(const beam::wallet::WalletAddress& walletAddr)
 {
     emit generatedNewAddress(walletAddr);

@@ -54,6 +54,10 @@ signals:
     void paymentProofExported(const beam::wallet::TxID& txID, const QString& proof);
     void addressChecked(const QString& addr, bool isValid);
 
+#if defined(BEAM_HW_WALLET)
+    void showTrezorMessage();
+#endif
+
 private:
     void onStatus(const beam::wallet::WalletStatus& status) override;
     void onTxStatus(beam::wallet::ChangeAction, const std::vector<beam::wallet::TxDescription>& items) override;
@@ -74,6 +78,10 @@ private:
     void onCoinsByTx(const std::vector<beam::wallet::Coin>& coins) override;
     void onAddressChecked(const std::string& addr, bool isValid) override;
     void onImportRecoveryProgress(uint64_t done, uint64_t total) override;
+
+#if defined(BEAM_HW_WALLET)
+    void onShowTrezorMessage() override;
+#endif
 
 private:
     std::vector<beam::wallet::WalletAddress> m_addresses;

@@ -35,6 +35,10 @@ public slots:
     void lockWallet();
     void onLockTimeoutChanged();
 
+#if defined(BEAM_HW_WALLET)
+    void showTrezorMessage();
+#endif
+
 private:
     WalletSettings& m_settings;
     QTimer m_timer;
