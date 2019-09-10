@@ -210,12 +210,12 @@ configure_file("${PROJECT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_SOURCE_DIR}
 
 target_link_libraries(${TARGET_NAME} PRIVATE qrcode cli)
 if (LINUX)
-    target_link_libraries(${TARGET_NAME} X11)
+    target_link_libraries(${TARGET_NAME} PRIVATE X11)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 if (APPLE)
-    target_link_libraries(${TARGET_NAME} ${CARBON_LIBRARY})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${CARBON_LIBRARY})
 endif()
 
 # link with QuaZip library
