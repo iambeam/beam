@@ -1299,26 +1299,6 @@ Escanee este código QR o envíe esta dirección al remitente a través de un ca
         <source>Create an offer</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="offer-book-title-2">
-        <source>Active offers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-coins">
-        <source>Coins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-all-tab">
-        <source>All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-mine-tab">
-        <source>Mine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-others-tab">
-        <source>Others</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message id="offer-book-time-created">
         <source>Date | time</source>
         <translation type="unfinished"></translation>
@@ -1469,6 +1449,42 @@ Escanee este código QR o envíe esta dirección al remitente a través de un ca
     </message>
     <message id="loading-view-rebuild-utxos">
         <source>Rebuilding UTXO image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-active-offers-tab">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-transactions-tab">
+        <source>Transactions</source>
+        <translation type="unfinished">Transacciones</translation>
+    </message>
+    <message id="offer-book-tx-table-created">
+        <source>Created on</source>
+        <translation type="unfinished">Fecha | hora</translation>
+    </message>
+    <message id="offer-book-tx-table-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-sent">
+        <source>Sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-received">
+        <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-status">
+        <source>Status</source>
+        <translation type="unfinished">Estado</translation>
+    </message>
+    <message id="general-create-trezor-wallet">
+        <source>Create new Trezor wallet</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
