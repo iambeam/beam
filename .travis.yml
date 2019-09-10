@@ -47,7 +47,6 @@ matrix:
         - brew update
         - brew unlink cmake
         - brew unlink boost 
-        - brew upgrade openssl
         - brew install cmake boost
         - sudo git clone --depth=1 https://github.com/nesbox/qt5-static-mac.git /usr/local/qt5-static
         - export PATH=/usr/local/qt5-static/bin:$PATH
