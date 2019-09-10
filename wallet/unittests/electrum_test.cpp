@@ -120,7 +120,7 @@ void testAddress()
 
     for (int i = 0; i < 30; i++)
     {
-        electrum.getRawChangeAddress([mainReactor, addresses](const bitcoin::IBridge::Error&, const std::string& addr)
+        electrum.getRawChangeAddress([addresses](const bitcoin::IBridge::Error&, const std::string& addr)
         {
             LOG_INFO() << "generated address = " << addr;
 
