@@ -21,8 +21,4 @@ target_link_libraries(${TARGET_NAME}
         pbkdf
 )
 
-if(APPLE)
-    target_link_libraries(${TARGET_NAME} PRIVATE Boost::regex)
-endif()
-
 add_subdirectory(unittests)

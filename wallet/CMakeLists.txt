@@ -109,10 +109,6 @@ if (NOT ANDROID)
             swap
             mnemonic)
 
-    if(APPLE)
-        target_link_libraries(${TARGET_NAME} PRIVATE Boost::locale)
-    endif()
-
     add_library(wallet_api_proto STATIC api.cpp)
     target_link_libraries(wallet_api_proto 
         PUBLIC

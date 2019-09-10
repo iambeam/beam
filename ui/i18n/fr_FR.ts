@@ -1299,26 +1299,6 @@ Vous essayez de restaurer un portefeuille Beam existant. Veuillez noter que si v
         <source>Create an offer</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="offer-book-title-2">
-        <source>Active offers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-coins">
-        <source>Coins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-all-tab">
-        <source>All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-mine-tab">
-        <source>Mine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-others-tab">
-        <source>Others</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message id="offer-book-time-created">
         <source>Date | time</source>
         <translation type="unfinished"></translation>
@@ -1469,6 +1449,42 @@ Vous essayez de restaurer un portefeuille Beam existant. Veuillez noter que si v
     </message>
     <message id="loading-view-rebuild-utxos">
         <source>Rebuilding UTXO image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-active-offers-tab">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-transactions-tab">
+        <source>Transactions</source>
+        <translation type="unfinished">Transactions</translation>
+    </message>
+    <message id="offer-book-tx-table-created">
+        <source>Created on</source>
+        <translation type="unfinished">Date | heure</translation>
+    </message>
+    <message id="offer-book-tx-table-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-sent">
+        <source>Sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-received">
+        <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-tx-table-status">
+        <source>Status</source>
+        <translation type="unfinished">Status</translation>
+    </message>
+    <message id="general-create-trezor-wallet">
+        <source>Create new Trezor wallet</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
