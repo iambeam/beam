@@ -666,13 +666,18 @@ namespace beam::bitcoin
 
     std::pair<hd_private, hd_private> Electrum::generateMasterPrivateKeys() const
     {
+        LOG_DEBUG() << "11";
         word_list seedPhrase(m_settingsProvider->GetElectrumSettings().m_secretWords);
+        LOG_DEBUG() << "12";
         auto hd_seed = electrum::decode_mnemonic(seedPhrase);
+        LOG_DEBUG() << "13";
         data_chunk seed_chunk(to_chunk(hd_seed));
+        LOG_DEBUG() << "14";
 #ifdef BEAM_MAINNET
         hd_private masterPrivateKey(seed_chunk, hd_public::mainnet);
 #else
         hd_private masterPrivateKey(seed_chunk, hd_public::testnet);
+        LOG_DEBUG() << "15";
 #endif
 
         return std::make_pair(masterPrivateKey.derive_private(0), masterPrivateKey.derive_private(1));
