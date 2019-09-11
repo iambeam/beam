@@ -122,8 +122,10 @@ void testAddress()
     {
         electrum.getRawChangeAddress([addresses](const bitcoin::IBridge::Error&, const std::string& addr)
         {
+            LOG_DEBUG() << "4";
             LOG_INFO() << "generated address = " << addr;
 
+            LOG_DEBUG() << "5";
             WALLET_CHECK(addresses.find(addr) != addresses.end());
         });
     }

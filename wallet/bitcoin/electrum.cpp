@@ -281,8 +281,11 @@ namespace beam::bitcoin
         LOG_DEBUG() << "getRawChangeAddress command";
 
         Error error{ None, "" };
+        LOG_DEBUG() << "1";
         auto privateKeys = generateMasterPrivateKeys();
+        LOG_DEBUG() << "2";
         callback(error, getAddress(m_currentReceivingAddress++, privateKeys.first));
+        LOG_DEBUG() << "3";
 
         auto receivingAddressAmount = m_settingsProvider->GetElectrumSettings().m_receivingAddressAmount;
         if (m_currentReceivingAddress >= receivingAddressAmount)
